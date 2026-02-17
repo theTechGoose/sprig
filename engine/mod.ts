@@ -1,10 +1,10 @@
 /**
- * Sprig to Deno Fresh Transpiler
+ * Sprig Engine
  *
- * Usage: deno run -A mod.ts <sprig-app-path>
+ * Core transpilation engine for converting Sprig apps to Deno Fresh.
+ * Use @sprig/cli for the command-line interface.
  *
- * Converts a Sprig app to a Deno Fresh app, outputting to a sibling
- * folder with -dist suffix (e.g., packages/web -> packages/web-dist).
+ * @module
  */
 
 import { join, resolve, dirname, basename, relative } from "@std/path";
@@ -44,6 +44,41 @@ let workspaceJsonPath: string | null = null;
 let relativeOutDir: string | null = null;
 
 /**
+ * Transpile options
+ */
+export interface TranspileOptions {
+  /** Generate dev routes for component testing */
+  dev?: boolean;
+  /** Incremental build mode */
+  watch?: boolean;
+  /** Force clean rebuild */
+  clean?: boolean;
+  /** Copy static assets instead of symlinking */
+  prod?: boolean;
+}
+
+/**
+ * Transpile a Sprig app to Deno Fresh
+ *
+ * @param inputPath - Path to the Sprig app directory
+ * @param options - Transpilation options
+ */
+export async function transpile(
+  inputPath: string,
+  options: TranspileOptions = {}
+): Promise<void> {
+  const resolvedPath = resolve(inputPath);
+  const args = [];
+
+  if (options.dev) args.push("--dev");
+  if (options.watch) args.push("--watch");
+  if (options.clean) args.push("--clean");
+  if (options.prod) args.push("--prod");
+
+  await runTranspiler(resolvedPath, args);
+}
+
+/**
  * Clean up workspace membership on shutdown
  */
 async function cleanupWorkspace(): Promise<void> {
@@ -67,24 +102,10 @@ function setupSignalHandlers(): void {
   });
 }
 
-async function main() {
-  const args = Deno.args;
-
-  if (args.length === 0) {
-    console.error("Usage: deno run -A mod.ts <sprig-app-path> [--dev] [--watch] [--clean] [--prod]");
-    console.error("Example: deno run -A mod.ts ./example-app");
-    console.error("\nFlags:");
-    console.error("  --dev    Generate dev routes for component testing");
-    console.error("  --watch  Incremental build (keep boilerplate, update src only)");
-    console.error("  --clean  Force clean rebuild");
-    console.error("  --prod   Copy static assets (default: symlink for faster dev)");
-    Deno.exit(1);
-  }
-
-  const inputPath = resolve(args[0]);
-  const isWatchMode = args.includes("--watch");
-  const forceClean = args.includes("--clean");
-  const isProdMode = args.includes("--prod");
+async function runTranspiler(inputPath: string, flags: string[]) {
+  const isWatchMode = flags.includes("--watch");
+  const forceClean = flags.includes("--clean");
+  const isProdMode = flags.includes("--prod");
 
   // Validate input path exists
   if (!await exists(inputPath)) {
@@ -267,7 +288,7 @@ async function main() {
   await writeRoutes(scanResult.routes, scanResult.components, outDir);
 
   // Step 10: Generate dev routes (if in dev mode)
-  const config: TranspilerConfig = args.includes("--dev") ? devConfig : { ...devConfig, devMode: false, generateDevRoutes: false };
+  const config: TranspilerConfig = flags.includes("--dev") ? devConfig : { ...devConfig, devMode: false, generateDevRoutes: false };
   if (config.generateDevRoutes) {
     console.log("Generating dev routes...");
     await writeDevRoutes(scanResult.domainComponents, config, outDir);
@@ -280,7 +301,16 @@ async function main() {
   console.log(`  deno task dev`);
 }
 
-main().catch((err) => {
-  console.error("Transpilation failed:", err);
-  Deno.exit(1);
-});
+// Run when executed directly (backwards compatibility)
+if (import.meta.main) {
+  const args = Deno.args;
+  if (args.length === 0) {
+    console.error("Usage: deno run -A mod.ts <sprig-app-path> [--dev] [--watch] [--clean] [--prod]");
+    console.error("\nFor full CLI, use: deno install -A jsr:@sprig/cli");
+    Deno.exit(1);
+  }
+  runTranspiler(resolve(args[0]), args.slice(1)).catch((err) => {
+    console.error("Transpilation failed:", err);
+    Deno.exit(1);
+  });
+}

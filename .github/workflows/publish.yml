@@ -25,6 +25,10 @@ jobs:
         run: deno publish
         working-directory: ./kit
 
-      - name: Publish @sprig/transpiler
+      - name: Publish @sprig/engine
         run: deno publish
-        working-directory: ./transpiler
+        working-directory: ./engine
+
+      - name: Publish @sprig/cli
+        run: deno publish
+        working-directory: ./cli

@@ -4,11 +4,12 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "test": "./scripts/test.sh landing",
-    "transpile": "deno run -A transpiler/mod.ts"
+    "transpile": "deno run -A engine/mod.ts"
   },
   "workspace": [
     "./kit",
-    "./transpiler",
+    "./engine",
+    "./cli",
     "./fixtures/landing",
     "./fixtures/landing-dist",
     "./fixtures/internals",
