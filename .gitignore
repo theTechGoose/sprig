@@ -1,3 +1,6 @@
+# Secrets
+.env*
+
 # Build outputs
 *-dist/
 transpiler/test-proj-dist/
