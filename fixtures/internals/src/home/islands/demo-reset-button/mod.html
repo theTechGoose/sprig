@@ -1,0 +1,13 @@
+<button
+  type="button"
+  (click)="handleReset()"
+  [disabled]="loading"
+  class="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-stone-800 border border-stone-700 hover:border-amber-600/50 hover:bg-stone-700 text-stone-400 hover:text-amber-400 flex items-center justify-center transition-all shadow-lg shadow-black/30 disabled:opacity-50"
+  title="Reset demo data"
+>
+  <svg *if="loading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+  </svg>
+  <span *if="!loading" class="text-sm font-mono font-bold">&lt;/&gt;</span>
+</button>

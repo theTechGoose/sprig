@@ -1,0 +1,14 @@
+<div *if="!hasProfile" class="text-center py-16 text-stone-500">
+  No profile found. Seed demo data first.
+</div>
+
+<div *if="hasProfile" class="space-y-8">
+  <div>
+    <p class="text-stone-400">Manage your business profile and settings</p>
+  </div>
+  <ProfileForm
+    [profile]="profile"
+    [apiBaseUrl]="apiBaseUrl"
+    [isDemo]="isDemo"
+  />
+</div>

@@ -1,0 +1,180 @@
+<div class="space-y-10">
+  <!-- Page header -->
+  <div>
+    <p class="text-stone-400">Welcome back. Here's an overview of your business.</p>
+  </div>
+
+  <!-- Stat cards grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <a [href]="prefix + '/customers'" class="group p-6 bg-stone-900/50 border border-stone-800/40 rounded-xl hover:border-blue-500/30 transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-3xl font-bold text-stone-100 mb-1">{{ customers.length }}</div>
+      <div class="text-sm text-stone-500">Total Customers</div>
+    </a>
+
+    <a [href]="prefix + '/quotes'" class="group p-6 bg-stone-900/50 border border-stone-800/40 rounded-xl hover:border-amber-500/30 transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-3xl font-bold text-stone-100 mb-1">{{ activeQuotes.length }}</div>
+      <div class="text-sm text-stone-500">Active Quotes</div>
+    </a>
+
+    <a [href]="prefix + '/contracts'" class="group p-6 bg-stone-900/50 border border-stone-800/40 rounded-xl hover:border-emerald-500/30 transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-3xl font-bold text-stone-100 mb-1">{{ activeContracts.length }}</div>
+      <div class="text-sm text-stone-500">Active Contracts</div>
+    </a>
+
+    <a [href]="prefix + '/invoices'" class="group p-6 bg-stone-900/50 border border-stone-800/40 rounded-xl hover:border-red-500/30 transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="text-3xl font-bold text-stone-100 mb-1">{{ pendingInvoices.length }}</div>
+      <div class="text-sm text-stone-500">Pending Invoices</div>
+    </a>
+  </div>
+
+  <!-- Recent activity cards -->
+  <div class="grid lg:grid-cols-2 gap-6">
+    <!-- Recent Quotes -->
+    <div class="p-6 bg-stone-900/50 border border-stone-800/40 rounded-xl">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-semibold text-stone-100">Recent Quotes</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Latest quote activity</p>
+        </div>
+        <a [href]="prefix + '/quotes'" class="text-sm text-amber-500 hover:text-amber-400 font-medium transition-colors">
+          View all
+        </a>
+      </div>
+      <div class="space-y-2">
+        <div *if="!hasQuotes" class="text-center py-8 text-stone-500">
+          <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-sm">No quotes yet</p>
+        </div>
+        <a
+          *for="q of recentQuotes"
+          [href]="prefix + '/quotes/' + q.id"
+          class="flex items-center justify-between p-3 rounded-lg hover:bg-stone-800/50 transition-all duration-200 group"
+        >
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-medium text-stone-200 truncate group-hover:text-stone-100 transition-colors">
+              {{ q.summary || 'Untitled Quote' }}
+            </div>
+            <div class="text-xs text-stone-500 mt-0.5">
+              {{ getCustomerName(q.customerId) }}
+            </div>
+          </div>
+          <StatusBadge [status]="q.status" />
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Invoices -->
+    <div class="p-6 bg-stone-900/50 border border-stone-800/40 rounded-xl">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-semibold text-stone-100">Recent Invoices</h2>
+          <p class="text-xs text-stone-500 mt-0.5">Payment status overview</p>
+        </div>
+        <a [href]="prefix + '/invoices'" class="text-sm text-amber-500 hover:text-amber-400 font-medium transition-colors">
+          View all
+        </a>
+      </div>
+      <div class="space-y-2">
+        <div *if="!hasInvoices" class="text-center py-8 text-stone-500">
+          <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <p class="text-sm">No invoices yet</p>
+        </div>
+        <a
+          *for="inv of recentInvoices"
+          [href]="prefix + '/invoices/' + inv.id"
+          class="flex items-center justify-between p-3 rounded-lg hover:bg-stone-800/50 transition-all duration-200 group"
+        >
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-medium text-stone-200 group-hover:text-stone-100 transition-colors">
+              <span class="text-emerald-400 font-semibold">{{ formatAmount(inv.amount) }}</span>
+            </div>
+            <div class="text-xs text-stone-500 mt-0.5">
+              Due: {{ inv.dueDate }}
+            </div>
+          </div>
+          <StatusBadge [status]="inv.status" />
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <a
+      [href]="prefix + '/customers/new'"
+      class="group relative flex items-center gap-4 p-5 rounded-xl bg-gradient-to-br from-stone-900/80 to-stone-900/60 border border-stone-800/40 hover:border-blue-500/50 transition-all duration-500 overflow-hidden hover:-translate-y-1"
+    >
+      <div class="relative w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500/20 group-hover:scale-110 transition-all duration-300">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </div>
+      <div class="relative">
+        <div class="text-sm font-semibold text-stone-200 group-hover:text-white transition-colors">Add Customer</div>
+        <div class="text-xs text-stone-500 mt-0.5">Create a new customer profile</div>
+      </div>
+    </a>
+
+    <a
+      [href]="prefix + '/quotes/new'"
+      class="group relative flex items-center gap-4 p-5 rounded-xl bg-gradient-to-br from-stone-900/80 to-stone-900/60 border border-stone-800/40 hover:border-amber-500/50 transition-all duration-500 overflow-hidden hover:-translate-y-1"
+    >
+      <div class="relative w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:bg-amber-500/20 group-hover:scale-110 transition-all duration-300">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <div class="relative">
+        <div class="text-sm font-semibold text-stone-200 group-hover:text-white transition-colors">Create Quote</div>
+        <div class="text-xs text-stone-500 mt-0.5">Draft a new quote</div>
+      </div>
+    </a>
+
+    <a
+      [href]="prefix + '/invoices/new'"
+      class="group relative flex items-center gap-4 p-5 rounded-xl bg-gradient-to-br from-stone-900/80 to-stone-900/60 border border-stone-800/40 hover:border-emerald-500/50 transition-all duration-500 overflow-hidden hover:-translate-y-1"
+    >
+      <div class="relative w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 group-hover:scale-110 transition-all duration-300">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </div>
+      <div class="relative">
+        <div class="text-sm font-semibold text-stone-200 group-hover:text-white transition-colors">New Invoice</div>
+        <div class="text-xs text-stone-500 mt-0.5">Bill a customer</div>
+      </div>
+    </a>
+  </div>
+</div>

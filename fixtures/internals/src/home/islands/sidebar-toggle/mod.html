@@ -1,0 +1,79 @@
+<button
+  type="button"
+  class="md:hidden p-2 text-stone-400 hover:text-stone-200"
+  (click)="toggle()"
+>
+  <svg
+    class="w-6 h-6"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    stroke-width="1.5"
+  >
+    <path
+      *if="!open"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M4 6h16M4 12h16M4 18h16"
+    />
+    <path
+      *if="open"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M6 18L18 6M6 6l12 12"
+    />
+  </svg>
+</button>
+
+<!-- Backdrop -->
+<div
+  *if="open"
+  class="fixed inset-0 bg-black/50 z-40 md:hidden"
+  (click)="close()"
+></div>
+
+<!-- Mobile sidebar -->
+<aside *if="open" class="fixed inset-y-0 left-0 z-50 w-64 bg-stone-900 border-r border-stone-800 md:hidden overflow-y-auto">
+  <div class="p-6 border-b border-stone-800 flex items-center justify-between">
+    <a [href]="buildHref('/')" class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-amber-600 flex items-center justify-center text-white font-bold text-sm">
+        PM
+      </div>
+      <span class="text-stone-100 font-bold text-lg">Admin</span>
+    </a>
+    <button
+      type="button"
+      class="p-1 text-stone-400 hover:text-stone-200"
+      (click)="close()"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="1.5"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  </div>
+  <nav class="py-4 px-3 space-y-1">
+    <a
+      *for="item of items"
+      [href]="buildHref(item.href)"
+      class="block px-3 py-2.5 rounded-lg text-sm font-medium text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
+    >
+      {{ item.label }}
+    </a>
+  </nav>
+  <div *if="isDemo" class="p-4 border-t border-stone-800">
+    <div class="flex items-center gap-2 text-xs text-stone-600">
+      <div class="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50"></div>
+      Demo mode
+    </div>
+  </div>
+</aside>

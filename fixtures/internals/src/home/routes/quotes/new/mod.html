@@ -1,0 +1,19 @@
+<div class="space-y-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-stone-400">Create a detailed project estimate</p>
+    </div>
+    <a
+      [href]="backHref"
+      class="text-sm text-stone-500 hover:text-stone-300 transition-colors"
+    >
+      Back to Quotes
+    </a>
+  </div>
+  <QuoteEditor
+    [customers]="customers"
+    [contractorId]="contractorId"
+    [apiBaseUrl]="apiBaseUrl"
+    [isDemo]="isDemo"
+  />
+</div>

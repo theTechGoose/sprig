@@ -1,0 +1,15 @@
+{
+  "name": "@paperwork/internals",
+  "version": "1.0.0",
+  "exports": {},
+  "imports": {
+    "@preact/signals": "npm:@preact/signals@^2.5.0",
+    "tailwindcss": "npm:tailwindcss@^4.1.10",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12"
+  },
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["dom", "dom.iterable", "deno.ns"]
+  }
+}

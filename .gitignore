@@ -1,0 +1,12 @@
+# Build outputs
+*-dist/
+transpiler/test-proj-dist/
+
+# OS files
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+node_modules
+.DS_Store

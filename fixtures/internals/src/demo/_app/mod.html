@@ -1,0 +1,25 @@
+<!-- Demo App Layout - wraps all demo routes with isDemo=true -->
+<div class="min-h-screen bg-stone-950 text-stone-200">
+  <div class="flex">
+    <!-- Sidebar -->
+    <Sidebar [isDemo]="isDemo" [contractorId]="contractorId" />
+
+    <!-- Main Content -->
+    <div class="flex-1 min-h-screen flex flex-col">
+      <!-- Topbar -->
+      <Topbar [isDemo]="isDemo" [contractorId]="contractorId" />
+
+      <!-- Page Content -->
+      <main class="flex-1 p-6 overflow-auto">
+        <div class="max-w-7xl mx-auto">
+          <ng-content />
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Global Islands -->
+  <Toast />
+  <ConfirmDialog />
+  <EventQueue [isDemo]="isDemo" [apiBaseUrl]="apiBaseUrl" />
+</div>

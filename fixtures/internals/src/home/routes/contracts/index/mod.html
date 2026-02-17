@@ -1,0 +1,18 @@
+<div class="space-y-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-stone-400">Manage signed contracts and agreements</p>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <DataTable
+    [columns]="columns"
+    [data]="rows"
+    [rowHref]="rowHref"
+    searchPlaceholder="Search contracts..."
+    [searchKeys]="['quoteSummary', 'selectedEstimate', 'status']"
+    emptyMessage="No contracts yet."
+  />
+</div>

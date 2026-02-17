@@ -1,0 +1,32 @@
+<EmptyState
+  *if="!hasQuote"
+  message="Quote not found."
+  actionLabel="Back to Quotes"
+  [actionHref]="backHref"
+/>
+
+<div *if="hasQuote" class="space-y-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <a
+        [href]="backHref"
+        class="text-sm text-stone-500 hover:text-stone-300 transition-colors flex items-center gap-1 mb-2"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Quotes
+      </a>
+      <h2 class="text-xl font-semibold text-stone-100">{{ quoteTitle }}</h2>
+      <p class="text-stone-400 text-sm mt-1">Edit quote details and estimates</p>
+    </div>
+    <ShareQuoteButton [quoteId]="quoteId" [prefix]="prefix" />
+  </div>
+  <QuoteEditor
+    [quote]="quote"
+    [customers]="customers"
+    [contractorId]="contractorId"
+    [apiBaseUrl]="apiBaseUrl"
+    [isDemo]="isDemo"
+  />
+</div>

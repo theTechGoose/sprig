@@ -1,0 +1,9 @@
+<a *if="hasHref" [href]="href" [class]="'block ' + baseClasses" data-spotlight-card>
+  <div class="spotlight-effect absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+  <ng-content></ng-content>
+</a>
+
+<div *if="!hasHref" [class]="baseClasses" data-spotlight-card>
+  <div class="spotlight-effect absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+  <ng-content></ng-content>
+</div>

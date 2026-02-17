@@ -1,0 +1,14 @@
+{
+  "name": "@paperwork/landing",
+  "version": "1.0.0",
+  "exports": {},
+  "imports": {
+    "tailwindcss": "npm:tailwindcss@^4.1.10",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12"
+  },
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["dom", "dom.iterable", "deno.ns"]
+  }
+}

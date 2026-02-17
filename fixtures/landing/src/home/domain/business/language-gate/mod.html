@@ -1,0 +1,19 @@
+<div *if="selected !== 'hidden'" class="fixed inset-0 z-[100] bg-stone-950/95 backdrop-blur-xl flex items-center justify-center p-8">
+  <div class="max-w-md w-full bg-stone-900 border border-stone-800 rounded-2xl p-8 text-center">
+    <h2 class="text-2xl font-bold text-stone-100 mb-2">Welcome!</h2>
+    <p class="text-stone-400 mb-8">Please select your preferred language</p>
+
+    <div class="flex gap-4">
+      <button (click)="pick('en')" class="flex-1 py-4 px-6 border border-stone-700 hover:border-amber-500 hover:bg-amber-600/10 text-stone-300 hover:text-amber-400 font-semibold rounded-xl transition-all">
+        English
+      </button>
+      <button (click)="pick('es')" class="flex-1 py-4 px-6 border border-stone-700 hover:border-amber-500 hover:bg-amber-600/10 text-stone-300 hover:text-amber-400 font-semibold rounded-xl transition-all">
+        Español
+      </button>
+    </div>
+  </div>
+</div>
+
+<button *if="selected === 'hidden'" (click)="reset()" class="fixed bottom-4 left-4 z-[100] w-10 h-10 bg-stone-800 hover:bg-stone-700 border border-stone-600 rounded-lg flex items-center justify-center text-stone-400 hover:text-stone-200 font-mono text-sm transition-all" title="Reset language">
+  &lt;/&gt;
+</button>

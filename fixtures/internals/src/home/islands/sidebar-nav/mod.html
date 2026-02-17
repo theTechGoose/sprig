@@ -1,0 +1,22 @@
+<nav class="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+  <a
+    *for="item of items"
+    [href]="buildHref(item.href)"
+    [class]="getNavClasses(item)"
+  >
+    <svg
+      class="w-5 h-5 flex-shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="1.5"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        [attr.d]="item.icon"
+      />
+    </svg>
+    {{ item.label }}
+  </a>
+</nav>

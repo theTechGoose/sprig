@@ -1,0 +1,33 @@
+<div class="flex flex-col h-[calc(100vh-12rem)]">
+  <div class="flex-1 overflow-y-auto space-y-3 p-4">
+    <div *for="msg of messages" [class]="getMessageContainerClass(msg.role)">
+      <div [class]="getMessageBubbleClass(msg.role)">
+        <div class="text-[10px] font-medium text-stone-500 mb-1">
+          {{ getMessageLabel(msg.role) }}
+        </div>
+        <div class="text-sm text-stone-200 whitespace-pre-wrap">
+          {{ msg.content }}
+        </div>
+      </div>
+    </div>
+    <div *if="!hasMessages" class="flex items-center justify-center h-full text-stone-500 text-sm">
+      No messages yet.
+    </div>
+  </div>
+  <form (submit)="handleSend($event)" class="border-t border-stone-800 p-4 flex gap-3">
+    <input
+      type="text"
+      [value]="newMessage"
+      (input)="onMessageInput($event)"
+      class="flex-1 px-4 py-2.5 bg-stone-900 border border-stone-700 rounded-lg text-stone-200 placeholder-stone-500 input-field text-sm"
+      placeholder="Type a message..."
+    />
+    <button
+      type="submit"
+      [disabled]="!canSend"
+      class="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+    >
+      Send
+    </button>
+  </form>
+</div>

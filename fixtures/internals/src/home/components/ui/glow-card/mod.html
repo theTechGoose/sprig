@@ -1,0 +1,11 @@
+<a *if="hasHref" [href]="href" [class]="'block ' + baseClasses">
+  <div class="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-white/[0.02] via-transparent to-transparent"></div>
+  <div class="glow-card-shine absolute inset-0 opacity-0 pointer-events-none"></div>
+  <ng-content></ng-content>
+</a>
+
+<div *if="!hasHref" [class]="baseClasses">
+  <div class="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-gradient-to-br from-white/[0.02] via-transparent to-transparent"></div>
+  <div class="glow-card-shine absolute inset-0 opacity-0 pointer-events-none"></div>
+  <ng-content></ng-content>
+</div>

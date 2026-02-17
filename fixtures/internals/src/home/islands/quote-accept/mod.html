@@ -1,0 +1,229 @@
+<div>
+  <!-- Loading state - show nothing, server-rendered skeleton is visible -->
+  <div *if="loading"></div>
+
+  <!-- Quote not found -->
+  <div *if="!loading && !quote" class="min-h-screen flex items-center justify-center">
+    <div class="text-center">
+      <h1 class="text-2xl font-bold text-stone-100 mb-4">Quote Not Found</h1>
+      <p class="text-stone-400 mb-8">The quote you're looking for doesn't exist or has been removed.</p>
+      <a
+        [href]="prefix + '/quotes'"
+        class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl transition-colors"
+      >
+        Back to Quotes
+      </a>
+    </div>
+  </div>
+
+  <!-- Accepted state -->
+  <div *if="!loading && quote && accepted" class="min-h-screen flex items-center justify-center">
+    <div class="text-center py-16">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/20 mb-6">
+        <svg class="w-10 h-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h2 class="text-3xl font-bold text-stone-100 mb-3">Quote Accepted!</h2>
+      <p class="text-stone-400 mb-8 max-w-lg mx-auto">
+        Thank you for choosing {{ contractorName }}. A contract has been created and is ready for your signature.
+      </p>
+      <a
+        [href]="signContractUrl"
+        class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-semibold rounded-xl shadow-lg shadow-amber-900/30 transition-all duration-300 hover:-translate-y-1"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Sign Contract
+      </a>
+    </div>
+  </div>
+
+  <!-- Main quote view -->
+  <div *if="!loading && quote && !accepted" class="min-h-screen">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+      <div class="absolute inset-0">
+        <div class="absolute top-0 left-1/4 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[128px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[128px]"></div>
+      </div>
+      <div class="relative max-w-6xl mx-auto px-6 py-16">
+        <div class="text-center mb-12">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 text-sm font-medium mb-6">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Professional Quote
+          </div>
+          <h1 class="text-4xl md:text-5xl font-bold text-stone-100 mb-4">{{ quote.summary }}</h1>
+          <p class="text-xl text-stone-400 max-w-2xl mx-auto">
+            Prepared exclusively for <span class="text-stone-200 font-semibold">{{ customerName }}</span>
+          </p>
+        </div>
+
+        <!-- Contractor Card -->
+        <div class="flex justify-center mb-12">
+          <div class="flex items-center gap-4 px-6 py-4 bg-stone-900/60 backdrop-blur-sm border border-stone-700/50 rounded-2xl">
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-amber-900/30">
+              {{ contractorInitials }}
+            </div>
+            <div>
+              <div class="font-semibold text-stone-100">{{ contractorName }}</div>
+              <div class="text-sm text-stone-400">{{ contractorEmail }}</div>
+              <div *if="contractor?.phoneNumber" class="text-sm text-stone-500">{{ contractor.phoneNumber }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-6 pb-16">
+      <!-- Estimate Cards -->
+      <div class="text-center mb-10">
+        <h2 class="text-2xl font-bold text-stone-100 mb-2">{{ chooseTitle }}</h2>
+        <p class="text-stone-400">{{ chooseSubtitle }}</p>
+      </div>
+
+      <div [class]="gridClass">
+        <button
+          *for="e of estimates"
+          type="button"
+          (click)="selectTier(e.tier)"
+          [class]="getCardClass(e.tier)"
+        >
+          <div *if="isRecommended(e.tier)" [class]="getTierColor(e.tier).badge + ' py-2 text-center text-xs font-bold uppercase tracking-wider'">
+            Recommended
+          </div>
+          <div *if="isSelected(e.tier)" class="absolute top-4 right-4 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div class="p-6">
+            <div class="text-center mb-6">
+              <div [class]="'text-sm font-semibold uppercase tracking-wider mb-2 ' + getTierColor(e.tier).text">
+                {{ getTierLabel(e.tier) }}
+              </div>
+              <div class="text-4xl font-bold text-stone-100">{{ formatTotal(e.estimate) }}</div>
+              <div *if="e.estimate.timeline" class="text-sm text-stone-500 mt-2 flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ e.estimate.timeline }}
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div *for="item of e.estimate.lineItems" class="flex justify-between items-start py-2 border-b border-stone-700/30 last:border-0">
+                <div class="flex-1 pr-4">
+                  <div class="text-sm text-stone-300">{{ item.description }}</div>
+                  <div class="text-xs text-stone-500">{{ item.quantity }} {{ item.unit }}</div>
+                </div>
+                <div class="text-sm font-medium text-stone-200">{{ formatLineTotal(item) }}</div>
+              </div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- CTA Section -->
+      <div class="relative">
+        <div class="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-amber-500/10 rounded-3xl blur-xl"></div>
+        <div class="relative glass-card p-10 text-center">
+          <h3 class="text-2xl font-bold text-stone-100 mb-3">Ready to Get Started?</h3>
+          <p class="text-stone-400 mb-8 max-w-lg mx-auto">{{ ctaText }}</p>
+
+          <div *if="error" class="mb-6 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-400 text-sm">
+            {{ error }}
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              type="button"
+              (click)="handleAccept()"
+              [disabled]="!canAccept"
+              class="px-8 py-4 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-lg shadow-amber-900/30 transition-all duration-300 hover:-translate-y-1 disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+            >
+              <svg *if="accepting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg *if="!accepting" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              {{ accepting ? 'Processing...' : 'Accept Quote' }}
+            </button>
+            <a
+              [href]="mailtoUrl"
+              class="px-8 py-4 bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold rounded-xl border border-stone-700 transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Ask a Question
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Section -->
+      <div class="grid md:grid-cols-2 gap-8 mt-16 mb-16">
+        <!-- Assumptions -->
+        <div *if="hasAssumptions" class="glass-card p-6">
+          <h3 class="text-lg font-semibold text-stone-100 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            What's Included
+          </h3>
+          <ul class="space-y-3">
+            <li *for="item of quote.assumptions" class="flex items-start gap-3 text-stone-300">
+              <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              {{ item }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Exclusions -->
+        <div *if="hasExclusions" class="glass-card p-6">
+          <h3 class="text-lg font-semibold text-stone-100 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Not Included
+          </h3>
+          <ul class="space-y-3">
+            <li *for="item of quote.exclusions" class="flex items-start gap-3 text-stone-400">
+              <svg class="w-5 h-5 text-stone-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              {{ item }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-12 text-center">
+        <p class="text-sm text-stone-500">
+          Quote valid for 30 days from receipt. Prices subject to change after this period.
+        </p>
+        <div class="flex items-center justify-center gap-4 mt-4">
+          <a
+            [href]="prefix + '/quotes/' + quote.id"
+            class="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to admin view
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

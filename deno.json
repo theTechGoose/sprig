@@ -1,0 +1,17 @@
+{
+  "name": "@sprig/monorepo",
+  "exports": {},
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "test": "./scripts/test.sh landing",
+    "transpile": "deno run -A transpiler/mod.ts"
+  },
+  "workspace": [
+    "./kit",
+    "./transpiler",
+    "./fixtures/landing",
+    "./fixtures/landing-dist",
+    "./fixtures/internals",
+    "./fixtures/internals-dist"
+  ]
+}

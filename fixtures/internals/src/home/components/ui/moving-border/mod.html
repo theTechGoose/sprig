@@ -1,0 +1,11 @@
+<a *if="isLink" [href]="href" [class]="baseClass" [style]="borderStyle">
+  <span class="relative z-10"><ng-content /></span>
+</a>
+
+<div *if="isDiv" [class]="baseClass" [style]="borderStyle">
+  <span class="relative z-10"><ng-content /></span>
+</div>
+
+<button *if="isButton" [type]="type" [disabled]="disabled" [class]="baseClass" [style]="borderStyle">
+  <span class="relative z-10"><ng-content /></span>
+</button>

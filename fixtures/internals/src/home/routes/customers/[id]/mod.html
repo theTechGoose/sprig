@@ -1,0 +1,26 @@
+<EmptyState
+  *if="!hasCustomer"
+  message="Customer not found."
+  actionLabel="Back to Customers"
+  [actionHref]="prefix + '/customers'"
+/>
+
+<div *if="hasCustomer" class="space-y-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-semibold text-stone-100">{{ customer.name }}</h2>
+      <p class="text-stone-400 text-sm mt-1">Edit customer details</p>
+    </div>
+    <a
+      [href]="prefix + '/customers'"
+      class="text-sm text-stone-500 hover:text-stone-300 transition-colors"
+    >
+      Back to Customers
+    </a>
+  </div>
+  <CustomerForm
+    [customer]="customer"
+    [apiBaseUrl]="apiBaseUrl"
+    [isDemo]="isDemo"
+  />
+</div>

@@ -1,0 +1,12 @@
+{
+  "name": "@sprig/transpiler",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "tasks": {
+    "transpile": "deno run -A mod.ts"
+  },
+  "imports": {
+    "@std/path": "jsr:@std/path@^1",
+    "@std/fs": "jsr:@std/fs@^1"
+  }
+}
