@@ -1,15 +1,19 @@
+#!/usr/bin/env -S deno run -A
 /**
  * Sprig CLI
  *
- * Command-line interface for the Sprig transpiler.
- *
- * Usage: deno run -A mod.ts <sprig-app-path> [options]
+ * Angular-like templates for Deno Fresh.
  */
 
-export { main } from "./main.ts";
+import { Command } from "@cliffy/command";
+import { buildCommand } from "./commands/build.ts";
+import { serveCommand } from "./commands/serve.ts";
 
-// Run CLI when executed directly
-if (import.meta.main) {
-  const { main } = await import("./main.ts");
-  main();
-}
+await new Command()
+  .name("sprig")
+  .version("0.1.0")
+  .description("Angular-like templates for Deno Fresh")
+  .command("build", buildCommand)
+  .command("serve", serveCommand)
+  .default("serve")
+  .parse(Deno.args);

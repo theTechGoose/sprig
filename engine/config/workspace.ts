@@ -64,24 +64,23 @@ export async function findWorkspaceDenoJson(
 }
 
 /**
- * Get the output directory path (sibling with -dist suffix)
+ * Get the output directory path (__sprig__/<name> inside project)
  *
  * Examples:
- * - packages/web/ → packages/web-dist/
- * - my-app/ → my-app-dist/
+ * - packages/web/ → packages/web/__sprig__/web/
+ * - my-app/ → my-app/__sprig__/my-app/
  *
  * @param sourceDir - Source directory path
- * @returns Output directory path with -dist suffix
+ * @returns Output directory path inside __sprig__ folder
  */
 export function getOutputDir(sourceDir: string): string {
   const baseName = basename(sourceDir);
-  const parentDir = dirname(sourceDir);
 
   // Handle trailing slash
-  const cleanBaseName = baseName || basename(parentDir);
-  const cleanParentDir = baseName ? parentDir : dirname(parentDir);
+  const cleanBaseName = baseName || basename(dirname(sourceDir));
+  const cleanSourceDir = baseName ? sourceDir : dirname(sourceDir);
 
-  return join(cleanParentDir, `${cleanBaseName}-dist`);
+  return join(cleanSourceDir, "__sprig__", cleanBaseName);
 }
 
 /**
@@ -141,8 +140,8 @@ export async function removeWorkspaceMember(
 }
 
 /**
- * Remove all stale transpiled members (matching *-dist pattern) from workspace.
- * Only removes members where the -dist folder no longer exists on disk.
+ * Remove all stale transpiled members (matching __sprig__ pattern) from workspace.
+ * Only removes members where the __sprig__ folder no longer exists on disk.
  *
  * @param workspaceJsonPath - Path to workspace deno.json
  * @returns Array of removed member paths
@@ -160,8 +159,8 @@ export async function cleanStaleTranspiledMembers(
   const cleanedWorkspace: string[] = [];
 
   for (const member of denoJson.workspace) {
-    // Check if this is a -dist member
-    if (member.endsWith("-dist")) {
+    // Check if this is a __sprig__ member
+    if (member.includes("__sprig__")) {
       const memberPath = join(gitRoot, member);
       const memberExists = await exists(memberPath);
 
@@ -198,13 +197,12 @@ export function getRelativePathFromGitRoot(
 }
 
 /**
- * Check if a source folder name already ends with -dist.
- * This is an edge case that should be warned about.
+ * Check if a source folder is inside __sprig__.
+ * This is an edge case that should be rejected.
  *
  * @param sourceDir - Source directory path
- * @returns true if folder name ends with -dist
+ * @returns true if path contains __sprig__
  */
-export function isDistFolder(sourceDir: string): boolean {
-  const baseName = basename(sourceDir) || basename(dirname(sourceDir));
-  return baseName.endsWith("-dist");
+export function isSprigOutputFolder(sourceDir: string): boolean {
+  return sourceDir.includes("__sprig__");
 }

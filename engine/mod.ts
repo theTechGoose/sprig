@@ -36,7 +36,7 @@ import {
   addWorkspaceMember,
   removeWorkspaceMember,
   cleanStaleTranspiledMembers,
-  isDistFolder,
+  isSprigOutputFolder,
 } from "./config/workspace.ts";
 
 // Track workspace state for cleanup
@@ -113,10 +113,11 @@ async function runTranspiler(inputPath: string, flags: string[]) {
     Deno.exit(1);
   }
 
-  // Check for edge case: source folder already ends with -dist
-  if (isDistFolder(inputPath)) {
-    console.error(`Warning: Source folder "${basename(inputPath)}" already ends with -dist.`);
-    console.error("Output will be named with -dist-dist suffix.");
+  // Check for edge case: source folder is inside __sprig__
+  if (isSprigOutputFolder(inputPath)) {
+    console.error(`Error: Cannot transpile from inside __sprig__ folder.`);
+    console.error("Run sprig from your project root, not the output directory.");
+    Deno.exit(1);
   }
 
   // Find deno.json to determine project root and read imports
@@ -139,7 +140,7 @@ async function runTranspiler(inputPath: string, flags: string[]) {
     Deno.exit(1);
   }
 
-  // Output directory is sibling folder with -dist suffix
+  // Output directory is __sprig__/<name> inside project
   const outDir = getOutputDir(projectRoot);
 
   console.log(`Transpiling Sprig app...`);
@@ -157,13 +158,13 @@ async function runTranspiler(inputPath: string, flags: string[]) {
     console.log(`  Workspace: ${workspaceJsonPath}`);
     const workspaceRoot = dirname(workspaceJsonPath);
 
-    // Clean stale transpiled members (*-dist that no longer exist)
+    // Clean stale transpiled members (__sprig__ folders that no longer exist)
     const staleMembers = await cleanStaleTranspiledMembers(workspaceJsonPath);
     if (staleMembers.length > 0) {
       console.log(`  Cleaned ${staleMembers.length} stale workspace member(s)`);
     }
 
-    // Register new -dist folder in workspace (relative to workspace root)
+    // Register __sprig__ folder in workspace (relative to workspace root)
     relativeOutDir = "./" + relative(workspaceRoot, outDir);
     await addWorkspaceMember(workspaceJsonPath, relativeOutDir);
     console.log(`  Registered ${relativeOutDir} in workspace`);
