@@ -4,6 +4,12 @@
 
 Refactor the CLI to use [Cliffy](https://cliffy.io/) and change the output directory structure from `<proj>-dist` to `__sprig__/<proj>`.
 
+**Core Principle:** The CLI is a thin wrapper that ALWAYS passes through to Deno. Every command follows this pattern:
+
+```
+cleanup (before) → transpile → deno <command> [...args] → cleanup (after)
+```
+
 ## Current State
 
 ### Output Directory Logic (engine/config/workspace.ts)
@@ -37,116 +43,164 @@ my-app/
 └── .gitignore              # Contains __sprig__/
 ```
 
-### New CLI Commands
+### CLI Commands (All Passthrough to Deno)
 
 ```bash
-sprig build [path]          # Transpile only
-sprig serve [path]          # Transpile + run Fresh dev server
-sprig serve --prod [path]   # Transpile + run Fresh production
+sprig build [path] [-- ...args]     # transpile → deno task build [...args]
+sprig serve [path] [-- ...args]     # transpile → deno task dev [...args]
+sprig <any> [path] [-- ...args]     # transpile → deno <any> [...args]
 ```
+
+Every command:
+1. Runs cleanup (before)
+2. Transpiles the project
+3. Passes through to `deno` with all remaining args
+4. Runs cleanup (after / on signal)
 
 ## Implementation Plan
 
 ### Phase 1: CLI Structure with Cliffy
 
+The CLI intercepts the first argument to determine the command, then passes everything else through to Deno.
+
 **File: cli/mod.ts**
 ```typescript
 import { Command } from "jsr:@cliffy/command@1";
-import { build } from "./commands/build.ts";
-import { serve } from "./commands/serve.ts";
+import { runCommand } from "./lib/runner.ts";
 
 await new Command()
   .name("sprig")
   .version("0.1.0")
   .description("Angular-like templates for Deno Fresh")
-  .command("build", build)
-  .command("serve", serve)
+  .arguments("[command:string] [path:string] [...args:string]")
+  .option("--clean", "Force clean rebuild before command")
+  .stopEarly() // Stop parsing, pass remaining args through
+  .action(async (options, command, path, ...args) => {
+    await runCommand({
+      command: command ?? "serve",
+      path: path ?? ".",
+      args,
+      clean: options.clean,
+    });
+  })
   .parse(Deno.args);
 ```
 
-**File: cli/commands/build.ts**
+**File: cli/lib/runner.ts**
 ```typescript
-import { Command } from "jsr:@cliffy/command@1";
-import { transpile } from "@sprig/engine";
-
-export const build = new Command()
-  .description("Transpile Sprig app to Fresh")
-  .arguments("[path:string]")
-  .option("--clean", "Force clean rebuild")
-  .option("--dev", "Generate dev routes")
-  .action(async (options, path = ".") => {
-    await runWithCleanup(async () => {
-      await transpile(path, {
-        clean: options.clean,
-        dev: options.dev,
-      });
-    });
-  });
-```
-
-**File: cli/commands/serve.ts**
-```typescript
-import { Command } from "jsr:@cliffy/command@1";
 import { transpile, getOutputDir } from "@sprig/engine";
+import { runWithCleanup } from "./cleanup.ts";
+import { resolve } from "@std/path";
 
-export const serve = new Command()
-  .description("Transpile and serve Fresh app")
-  .arguments("[path:string]")
-  .option("--prod", "Run in production mode")
-  .option("--port <port:number>", "Port to serve on", { default: 8000 })
-  .option("--watch", "Watch for changes and rebuild")
-  .action(async (options, path = ".") => {
-    await runWithCleanup(async () => {
-      // 1. Transpile
-      await transpile(path, {
-        watch: options.watch,
-        prod: options.prod,
-      });
+interface RunOptions {
+  command: string;
+  path: string;
+  args: string[];
+  clean?: boolean;
+}
 
-      // 2. Run Fresh (passthrough to deno task)
-      const outDir = getOutputDir(path);
-      const cmd = options.prod ? "start" : "dev";
+export async function runCommand(options: RunOptions): Promise<void> {
+  const projectPath = resolve(options.path);
 
-      const process = new Deno.Command("deno", {
-        args: ["task", cmd],
-        cwd: outDir,
-        stdin: "inherit",
-        stdout: "inherit",
-        stderr: "inherit",
-      });
-
-      await process.output();
+  await runWithCleanup(projectPath, async () => {
+    // 1. Transpile
+    await transpile(projectPath, {
+      clean: options.clean,
     });
+
+    // 2. Get output directory
+    const outDir = getOutputDir(projectPath);
+
+    // 3. Map sprig command to deno command
+    const denoArgs = mapCommand(options.command, options.args);
+
+    // 4. Execute deno with full passthrough
+    const process = new Deno.Command("deno", {
+      args: denoArgs,
+      cwd: outDir,
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+
+    const status = await process.spawn().status;
+    Deno.exit(status.code);
   });
+}
+
+function mapCommand(command: string, args: string[]): string[] {
+  switch (command) {
+    case "build":
+      return ["task", "build", ...args];
+    case "serve":
+      return ["task", "dev", ...args];
+    case "start":
+      return ["task", "start", ...args];
+    default:
+      // Direct passthrough: sprig test → deno test
+      return [command, ...args];
+  }
+}
 ```
 
 ### Phase 2: Cleanup Logic
 
 **File: cli/lib/cleanup.ts**
 ```typescript
-import { getSprigDir } from "@sprig/engine";
+import {
+  findWorkspaceDenoJson,
+  removeWorkspaceMember,
+  getOutputDir
+} from "@sprig/engine";
+import { relative, dirname } from "@std/path";
 
-let cleanupRegistered = false;
+let currentProjectPath: string | null = null;
+let workspaceJsonPath: string | null = null;
+let relativeOutDir: string | null = null;
 
-export async function runWithCleanup<T>(fn: () => Promise<T>): Promise<T> {
-  if (!cleanupRegistered) {
-    // Register signal handlers
-    Deno.addSignalListener("SIGINT", cleanup);
-    Deno.addSignalListener("SIGTERM", cleanup);
-    cleanupRegistered = true;
+export async function runWithCleanup(
+  projectPath: string,
+  fn: () => Promise<void>
+): Promise<void> {
+  currentProjectPath = projectPath;
+
+  // Setup cleanup handlers
+  const cleanup = createCleanupHandler();
+  Deno.addSignalListener("SIGINT", cleanup);
+  Deno.addSignalListener("SIGTERM", cleanup);
+
+  // Find workspace for cleanup tracking
+  workspaceJsonPath = await findWorkspaceDenoJson(projectPath);
+  if (workspaceJsonPath) {
+    const workspaceRoot = dirname(workspaceJsonPath);
+    const outDir = getOutputDir(projectPath);
+    relativeOutDir = "./" + relative(workspaceRoot, outDir);
   }
 
   try {
-    return await fn();
+    await fn();
   } finally {
-    await cleanup();
+    await performCleanup();
+    Deno.removeSignalListener("SIGINT", cleanup);
+    Deno.removeSignalListener("SIGTERM", cleanup);
   }
 }
 
-async function cleanup(): Promise<void> {
-  // Remove workspace member registration
-  // (engine handles this internally via removeWorkspaceMember)
-  console.log("\nCleaning up...");
+function createCleanupHandler(): () => void {
+  return () => {
+    performCleanup().then(() => Deno.exit(0));
+  };
+}
+
+async function performCleanup(): Promise<void> {
+  if (workspaceJsonPath && relativeOutDir) {
+    try {
+      await removeWorkspaceMember(workspaceJsonPath, relativeOutDir);
+      console.log(`\nCleaned up: removed ${relativeOutDir} from workspace`);
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
 }
 ```
 
@@ -195,33 +249,50 @@ if (isSprigOutputFolder(inputPath)) {
 }
 ```
 
-### Phase 4: Passthrough Commands
+### Phase 4: Full Deno Passthrough
 
-The `serve` command needs to pass through Deno's features:
-- `--watch` → Deno's watch mode
-- `--port` → Fresh's port config
-- Ctrl+C handling → cleanup + exit
+**Every** sprig command is a passthrough to deno. The CLI:
+1. Intercepts the command name
+2. Transpiles the project
+3. Executes `deno <mapped-command> <all-remaining-args>` in `__sprig__/<proj>/`
+
+**Command Mapping:**
+| Sprig Command | Deno Command |
+|---------------|--------------|
+| `sprig serve` | `deno task dev` |
+| `sprig build` | `deno task build` |
+| `sprig start` | `deno task start` |
+| `sprig test` | `deno test` |
+| `sprig lint` | `deno lint` |
+| `sprig fmt` | `deno fmt` |
+| `sprig <any>` | `deno <any>` |
+
+**All flags pass through:**
+```bash
+sprig serve --port=3000 --hostname=0.0.0.0
+# → transpile → deno task dev --port=3000 --hostname=0.0.0.0
+
+sprig test --coverage --parallel
+# → transpile → deno test --coverage --parallel
+
+sprig run scripts/seed.ts --allow-env
+# → transpile → deno run scripts/seed.ts --allow-env
+```
 
 **Implementation:**
 ```typescript
-// In serve command
-const denoArgs = ["task", options.prod ? "start" : "dev"];
-
-// Pass through any additional args after --
-if (options["--"]) {
-  denoArgs.push(...options["--"]);
-}
-
+// cli/lib/runner.ts
 const process = new Deno.Command("deno", {
-  args: denoArgs,
-  cwd: outDir,
-  stdin: "inherit",
-  stdout: "inherit",
-  stderr: "inherit",
-  env: {
-    PORT: String(options.port),
-  },
+  args: denoArgs,        // Full passthrough
+  cwd: outDir,           // Run in __sprig__/<proj>/
+  stdin: "inherit",      // Passthrough stdin
+  stdout: "inherit",     // Passthrough stdout
+  stderr: "inherit",     // Passthrough stderr
 });
+
+// Exit with same code as deno
+const status = await process.spawn().status;
+Deno.exit(status.code);
 ```
 
 ### Phase 5: .gitignore Integration
@@ -272,26 +343,40 @@ async function ensureGitignore(projectDir: string): Promise<void> {
 ## CLI Usage Examples
 
 ```bash
-# Basic build
-sprig build
+# Serve (default command) - passes through to `deno task dev`
+sprig
+sprig serve
+sprig serve ./my-app
 
-# Build specific project
+# All flags pass through to deno
+sprig serve --port=3000
+sprig serve --hostname=0.0.0.0 --port=8080
+
+# Build - passes through to `deno task build`
+sprig build
 sprig build ./my-app
 
-# Build with dev routes
-sprig build --dev
+# Start (production) - passes through to `deno task start`
+sprig start
 
-# Serve with hot reload
-sprig serve
+# Any deno command works - passes through directly
+sprig test
+sprig test --coverage
+sprig lint
+sprig fmt
+sprig check
+sprig run scripts/seed.ts
 
-# Serve in production mode
-sprig serve --prod
+# Force clean rebuild before any command
+sprig --clean serve
+sprig --clean build
 
-# Serve on custom port
-sprig serve --port 3000
+# Inspect/debug - flags pass through
+sprig serve --inspect
+sprig serve --inspect-brk
 
-# Pass additional args to Deno
-sprig serve -- --inspect
+# Everything after the path passes to deno
+sprig test ./my-app --parallel --coverage --fail-fast
 ```
 
 ## Migration Notes
