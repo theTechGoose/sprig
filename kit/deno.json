@@ -1,6 +1,7 @@
 {
   "name": "@sprig/kit",
   "version": "0.1.0",
+  "license": "MIT",
   "exports": "./mod.ts",
   "compilerOptions": {
     "experimentalDecorators": true
